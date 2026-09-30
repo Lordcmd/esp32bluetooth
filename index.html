@@ -12,6 +12,10 @@
         .btn-on { background-color: #28a745; color: white; }
         .btn-off { background-color: #dc3545; color: white; }
         .btn-msg { background-color: #17a2b8; color: white; }
+		.btn-up { background-color: #17a2b8; color: white; }
+		.btn-left { background-color: #17a2b8; color: white; }
+		.btn-down { background-color: #17a2b8; color: white; }
+		.btn-right { background-color: #17a2b8; color: white; }
         button:hover { opacity: 0.9; }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
         #status { margin: 20px; font-weight: bold; color: #666; font-size: 18px; }
@@ -33,9 +37,9 @@
 		<br><br>
 		<button class="btn-up" id="upBtn" onclick="sendBLEText('UP')" disabled>Up</button>
 		<br>
-		<button class="btn-up" id="upBtn" onclick="sendBLEText('LEFT')" disabled>Up</button>
-		<button class="btn-up" id="upBtn" onclick="sendBLEText('DOWN')" disabled>Up</button>
-		<button class="btn-up" id="upBtn" onclick="sendBLEText('RIGHT')" disabled>Up</button>
+		<button class="btn-left" id="upBtn" onclick="sendBLEText('LEFT')" disabled>Left</button>
+		<button class="btn-down" id="upBtn" onclick="sendBLEText('DOWN')" disabled>Down</button>
+		<button class="btn-right" id="upBtn" onclick="sendBLEText('RIGHT')" disabled>Right</button>
     </div>
 
     <script>
