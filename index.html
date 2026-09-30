@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32-C3 Custom Controller</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #f4f4f9; padding: 40px 20px; }
+        h1 { color: #333; }
+        button { font-size: 16px; padding: 12px 24px; margin: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-connect { background-color: #007bff; color: white; width: 200px; }
+        .btn-on { background-color: #28a745; color: white; }
+        .btn-off { background-color: #dc3545; color: white; }
+        .btn-msg { background-color: #17a2b8; color: white; }
+        button:hover { opacity: 0.9; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        #status { margin: 20px; font-weight: bold; color: #666; font-size: 18px; }
+        .control-panel { margin-top: 30px; }
+    </style>
+</head>
+<body>
+
+    <h1>ESP32-C3 Bluetooth Control</h1>
+    <div id="status">Status: Disconnected</div>
+    
+    <button class="btn-connect" id="connectBtn" onclick="connectBLE()">Connect to ESP32</button>
+    
+    <div class="control-panel">
+        <button class="btn-on" id="onBtn" onclick="sendBLEText('ON')" disabled>LED ON</button>
+        <button class="btn-off" id="offBtn" onclick="sendBLEText('OFF')" disabled>LED OFF</button>
+        <br><br>
+        <button class="btn-msg" id="msgBtn" onclick="sendBLEText('Hello from Web Bluetooth!')" disabled>Send Text Message</button>
+    </div>
+
+    <script>
+        // These MUST match your ESP32 Arduino code exactly
+        const SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
+        const CHARACTERISTIC_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a7';
+        
+        let bleCharacteristic = null;
+        let bleDevice = null;
+
+        async function connectBLE() {
+            document.getElementById('status').innerText = "Status: Searching...";
+            try {
+                bleDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: [SERVICE_UUID] }]
+                });
+
+                document.getElementById('status').innerText = "Status: Connecting...";
+                const server = await bleDevice.gatt.connect();
+
+                document.getElementById('status').innerText = "Status: Fetching Service...";
+                const service = await server.getPrimaryService(SERVICE_UUID);
+
+                document.getElementById('status').innerText = "Status: Fetching Characteristic...";
+                bleCharacteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+
+                document.getElementById('status').innerText = "Status: Connected!";
+                
+                // Enable control buttons
+                document.getElementById('onBtn').disabled = false;
+                document.getElementById('offBtn').disabled = false;
+                document.getElementById('msgBtn').disabled = false;
+                
+                document.getElementById('connectBtn').innerText = "Disconnect";
+                document.getElementById('connectBtn').onclick = disconnectBLE;
+
+            } catch (error) {
+                console.log('Error: ' + error);
+                document.getElementById('status').innerText = "Status: Connection Failed";
+            }
+        }
+
+        async function sendBLEText(textMessage) {
+            if (bleCharacteristic) {
+                try {
+                    // Convert text string into bytes for Bluetooth transmission
+                    const encoder = new TextEncoder();
+                    const data = encoder.encode(textMessage);
+                    await bleCharacteristic.writeValue(data);
+                    console.log(`Sent: ${textMessage}`);
+                } catch (error) {
+                    console.log('Error sending data: ' + error);
+                }
+            }
+        }
+
+        function disconnectBLE() {
+            if (bleDevice && bleDevice.gatt.connected) {
+                bleDevice.gatt.disconnect();
+            }
+            document.getElementById('status').innerText = "Status: Disconnected";
+            document.getElementById('onBtn').disabled = true;
+            document.getElementById('offBtn').disabled = true;
+            document.getElementById('msgBtn').disabled = true;
+            document.getElementById('connectBtn').innerText = "Connect to ESP32";
+            document.getElementById('connectBtn').onclick = connectBLE;
+        }
+    </script>
+</body>
+</html>
+	
